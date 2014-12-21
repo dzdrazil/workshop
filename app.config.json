@@ -1,0 +1,14 @@
+{
+  "connections": [
+    {
+      "port": 3000,
+      "labels": ["web", "api"]
+    }
+  ],
+  "plugins": {
+    "./web": {
+      "select": ["web"],
+      "publicPath": "assets/public"
+    }
+  }
+}
