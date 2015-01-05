@@ -6,9 +6,34 @@
     }
   ],
   "plugins": {
+    "./db": {
+        "select": ["web", "api"],
+        "debug": false,
+        "connection": {
+            "host": "localhost",
+            "user": "workshop-user",
+            "password": "workshop",
+            "database": "workshop"
+        }
+    },
+    "./errors": {
+        "select": ["web", "api"]
+    },
     "./web": {
       "select": ["web"],
       "publicPath": "assets/public"
+    },
+    "./authenticate": {
+      "select": ["web"],
+      "jwtKey": "somesecret"
+    },
+    "./socketio": {
+      "select": ["web"],
+      "jwtKey": "somesecret"
+    },
+    "./socketio/connection": {
+      "select": ["web"],
+      "jwtKey": "somesecret"
     }
   }
 }

@@ -5,7 +5,9 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "./node_modules/.bin/rejoice -c app.config.json -p ./plugins"
+    "start": "./node_modules/.bin/rejoice -c app.config.json -p ./plugins",
+    "migrate": "node scripts/db/knexfile.js -m",
+    "reset": "node scripts/db/knexfile.js -r -m -f"
   },
   "repository": {
     "type": "git",
@@ -20,17 +22,20 @@
   "dependencies": {
     "hapi": "~8.0.0",
     "rejoice": "~2.0.0",
-    "handlebars": "~2.0.0"
+    "handlebars": "~2.0.0",
+    "socket.io": "~1.2.1",
+    "jsonwebtoken": "~2.0.0",
+    "socketio-jwt": "~2.3.5",
+    "knex": "~0.7.3",
+    "pg": "~4.1.1",
+    "bossy": "~1.0.2",
+    "bluebird": "~2.5.3",
+    "boom": "~2.6.1",
+    "joi": "~5.1.0",
+    "common-errors": "~0.4.17",
+    "lodash": "~2.4.1"
   },
   "devDependencies": {
-    "grunt": "~0.4.5",
-    "webpack-traceur-loader": "~0.3.0",
-    "grunt-contrib-watch": "~0.6.1",
-    "webpack": "~1.4.13",
-    "webpack-dev-server": "~1.6.6",
-    "grunt-webpack": "~1.0.8",
-    "ractive": "~0.6.1",
-    "ractive-loader": "~0.5.6",
-    "traceur-loader": "~0.6.3"
+    "grunt": "~0.4.5"
   }
 }
