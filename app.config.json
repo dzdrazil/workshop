@@ -2,12 +2,12 @@
   "connections": [
     {
       "port": 3000,
-      "labels": ["web", "api"]
+      "labels": ["api"]
     }
   ],
   "plugins": {
     "./db": {
-        "select": ["web", "api"],
+        "select": ["api"],
         "debug": false,
         "connection": {
             "host": "localhost",
@@ -17,23 +17,17 @@
         }
     },
     "./errors": {
-        "select": ["web", "api"]
-    },
-    "./web": {
-      "select": ["web"],
-      "publicPath": "assets/public"
+        "select": ["api"]
     },
     "./authenticate": {
-      "select": ["web"],
+      "select": ["api"],
       "jwtKey": "somesecret"
     },
-    "./socketio": {
-      "select": ["web"],
-      "jwtKey": "somesecret"
+    "./publish": {
+      "select": ["api"]
     },
-    "./socketio/connection": {
-      "select": ["web"],
-      "jwtKey": "somesecret"
+    "./test": {
+      "select": ["api"]
     }
   }
 }
