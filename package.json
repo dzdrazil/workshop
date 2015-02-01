@@ -34,7 +34,9 @@
     "joi": "~5.1.0",
     "common-errors": "~0.4.17",
     "lodash": "~2.4.1",
-    "es6-map": "~0.1.1"
+    "es6-map": "~0.1.1",
+    "hapi-auth-jwt": "~2.0.0",
+    "hapi-swagger": "~0.6.2"
   },
   "devDependencies": {
     "grunt": "~0.4.5"

@@ -19,6 +19,22 @@
     "./errors": {
         "select": ["api"]
     },
+    "./documentation": {
+      "select": ["api"],
+      "enable": true,
+      "authorizations": {
+        "default": {
+          "type": "apiKey",
+          "passAs": "header",
+          "keyname": "Authorization"
+        },
+        "jwt": {
+          "type": "apiKey",
+          "passAs": "header",
+          "keyname": "Authorization"
+        }
+      }
+    },
     "./authenticate": {
       "select": ["api"],
       "jwtKey": "somesecret"
