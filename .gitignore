@@ -5,6 +5,8 @@
 .tmp/
 
 build-env.js
+app.config.json
+
 node_modules/
 npm-debug.log
 
@@ -16,3 +18,4 @@ pids
 *.seed
 
 *.sublime-*
+

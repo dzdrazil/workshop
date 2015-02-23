@@ -5,22 +5,37 @@ module.exports = function(db) {
 	/**
 	 * @class Project
 	 */
-	return {
+	var  ProjectTable = {
+		find: function(id) {
+			return db.table('projects')
+				.first('*')
+				.where('id', id);
+		},
 		/**
 		 * Create a new Project
-		 * @param  {String} name    Project name
-		 * @param  {String} ownerId Project Owner UUID
-		 * @return {Promise}        Resolves to the new Project model
+		 * @param  {String} name       Project name
+		 * @param {String} description Project Description
+		 * @param  {String} ownerId    Project Owner UUID
+		 * @return {Promise}           Resolves to the new Project model
 		 */
-		create: function(name, ownerId) {
-			return db.insert({
+		create: function(name, description, ownerId) {
+			var project = {
 				id: db.AUTO_UUID,
 				name: name,
-				owner_id: ownerId
-			}, 'id')
+				description: description,
+				owner_id: ownerId,
+				created_at: new Date(),
+				updated_at: new Date()
+			};
+
+			return db.insert(project, 'id')
 				.into('projects')
 				.then(function(result) {
-					return result[0];
+					project.id = result[0];
+					return project;
+				})
+				.tap(function(project) {
+					return ProjectTable.changeOwner(project.id, ownerId);
 				});
 		},
 
@@ -59,13 +74,12 @@ module.exports = function(db) {
 		 * @return {Promise}            Result of the DB operation
 		 */
 		changeOwner: function(projectId, newOwnerId) {
-			var self = this;
 			return db.transaction(function(t) {
 				return t.first('owner_id')
 					.from('projects')
 					.where('id', projectId)
 					.then(function(projectRow) {
-						return self.shareWithUser(projectRow.owner_id, projectId, t);
+						return ProjectTable.shareWithUser(projectRow.owner_id, projectId, t);
 					})
 					.then(function() {
 						return t('projects')
@@ -76,4 +90,6 @@ module.exports = function(db) {
 
 		}
 	};
+
+	return ProjectTable;
 };

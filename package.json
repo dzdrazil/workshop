@@ -36,7 +36,10 @@
     "lodash": "~2.4.1",
     "es6-map": "~0.1.1",
     "hapi-auth-jwt": "~2.0.0",
-    "hapi-swagger": "~0.6.2"
+    "hapi-swagger": "~0.6.2",
+    "uuid": "~2.0.1",
+    "good": "~5.1.2",
+    "good-console": "~4.1.0"
   },
   "devDependencies": {
     "grunt": "~0.4.5"

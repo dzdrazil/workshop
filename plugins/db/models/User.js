@@ -3,11 +3,21 @@
 var USER_TABLENAME = 'users';
 var SESSION_TABLENAME = 'sessions';
 
-module.exports = function (knex) {
+module.exports = function(knex) {
 	/**
 	 * @class User
 	 */
 	return {
+		/**
+		 * Find a user row
+		 * @param  {String} id User UUID
+		 * @return {Object}    user database row
+		 */
+		find: function(id) {
+			return knex(USER_TABLENAME)
+				.first('*')
+				.where({id: id});
+		},
 		/**
 		 * Get the UUID for the User based on the credentials
 		 * @param  {String} email Email address
@@ -36,7 +46,9 @@ module.exports = function (knex) {
 					return knex
 						.insert({
 							id: knex.AUTO_UUID,
-							user_id: userRow.id
+							user_id: userRow.id,
+							created_at: new Date(),
+							updated_at: new Date()
 						})
 						.into(SESSION_TABLENAME)
 						.returning('id')

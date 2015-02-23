@@ -3,6 +3,7 @@
 var Boom = require('boom');
 var jwt = require('jsonwebtoken');
 
+
 /**
  * @module AuthenticationController
  * @param  {Knex}         db        Database
@@ -11,6 +12,9 @@ var jwt = require('jsonwebtoken');
  * @param  {String} options.jwtKey  Private key used to sign authentication tokens
  */
 module.exports = function(server, db, errors, options) {
+	var UserTable = db.User;
+	var SessionTable = db.Session;
+
 	/**
 	 * @class AuthenticationController
 	 */
@@ -21,7 +25,13 @@ module.exports = function(server, db, errors, options) {
 		 * @param  {Function} next         Callback- passed err, isValid, credentials as arguments
 		 */
 		validateToken: function(decodedToken, next) {
-			next(null, true, {});
+			SessionTable.validateSession(decodedToken.userId,decodedToken.sessionId)
+				.then(function(isValid) {
+					next(null, isValid, decodedToken);
+				})
+				.catch(function(e) {
+					next(e, false);
+				});
 		},
 
 		/**
@@ -30,15 +40,14 @@ module.exports = function(server, db, errors, options) {
 		 * @param  {Function} reply  Hapi reply function
 		 */
 		loginAction: function(request, reply) {
-			db.User.authenticate(request.payload.email)
-				.then(function(user) {
-					console.log(user);
-					if (!user) {
-						throw new errors.AuthenticationError();
-					}
-					return db.User.createSession(user);
+			UserTable.authenticate(request.payload.email)
+				.tap(function(user) {
+					if (!user)
+						throw new Boom.unauthorized('invalid credentials');
 				})
-				/* jshint camelcase:false */
+				.then(function(userRow) {
+					return SessionTable.findOrCreate(userRow.id);
+				})
 				.then(function(session) {
 					reply({
 						userId: session.user_id,
@@ -46,12 +55,8 @@ module.exports = function(server, db, errors, options) {
 					});
 				})
 				.catch(function(e) {
-					if (e instanceof errors.AuthenticationError) {
-						server.log(['error', 'authenticationFailure'], e.stack);
-						return reply(Boom.unauthorized(e));
-					}
 					server.log(['error'], e.stack);
-					reply(Boom.badImplementation(e.stack));
+					reply(e);
 				});
 		}
 	};

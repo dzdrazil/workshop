@@ -29,6 +29,7 @@ module.exports.up = function(knex, Promise) {
       return knex.schema.createTable('projects', function(table) {
         table.uuid('id').primary();
         table.string('name').notNullable();
+        table.string('description').notNullable();
         table.uuid('owner_id')
           .references('id').inTable('users')
           .notNullable();
@@ -45,7 +46,7 @@ module.exports.up = function(knex, Promise) {
           .references('id').inTable('projects')
           .notNullable();
 
-        table.primary('user_id', 'project_id');
+        // table.primary('user_id', 'project_id');
       });
     })
     .catch(function(e) {

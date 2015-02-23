@@ -6,10 +6,10 @@ module.exports.register = function(server, options, next) {
 	var db = knex({
 		dialect: 'pg',
 		connection: {
-			host     : options.connection.host,
-			user     : options.connection.user,
-			password : options.connection.password,
-			database : options.connection.database
+			host     : options.knex.connection.host,
+			user     : options.knex.connection.user,
+			password : options.knex.connection.password,
+			database : options.knex.connection.database
 		}
 	});
 
@@ -19,6 +19,7 @@ module.exports.register = function(server, options, next) {
 
 	var externals = {
 		User: require('./models/User')(db),
+		Session: require('./models/Session')(server, db),
 		Project: require('./models/Project')(db)
 	};
 

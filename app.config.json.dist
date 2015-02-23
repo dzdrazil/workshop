@@ -2,19 +2,33 @@
   "connections": [
     {
       "port": 3000,
-      "labels": ["api"]
+      "labels": ["api"],
+      "routes": {
+        "cors": true
+      }
     }
   ],
   "plugins": {
-    "./db": {
-        "select": ["api"],
-        "debug": false,
-        "connection": {
-            "host": "localhost",
-            "user": "workshop-user",
-            "password": "workshop",
-            "database": "workshop"
+    "./logging": {
+      "reporters": {
+        "console": {
+          "args": [{ "log": "*", "response": "*" }]
         }
+      }
+    },
+    "./db": {
+      "select": ["api"],
+      "knex": {
+        "client": "pg",
+        "debug": true,
+        "connection": {
+          "host": "localhost",
+          "user": "workshop-user",
+          "password": "workshop",
+          "database": "workshop"
+        }
+      },
+      "plugins": ["registry","visibility"]
     },
     "./errors": {
         "select": ["api"]
@@ -22,6 +36,7 @@
     "./documentation": {
       "select": ["api"],
       "enable": true,
+      "auth": false,
       "authorizations": {
         "default": {
           "type": "apiKey",
@@ -43,6 +58,9 @@
       "select": ["api"]
     },
     "./test": {
+      "select": ["api"]
+    },
+    "./projects": {
       "select": ["api"]
     }
   }

@@ -23,7 +23,6 @@ module.exports.register = function(server, options, next) {
 				Pub.get(name).forEach(function(connection) {
 					connection.write('event: ' + name + '\n');
 					connection.write('data: ' + JSON.stringify(data) + '\n\n');
-					console.log('sent data: ', name, JSON.stringify(data));
 				});
 			}
 		},
@@ -77,6 +76,36 @@ module.exports.register = function(server, options, next) {
 		 */
 		get: function(name) {
 			return Pub.connections.get(name);
+		},
+
+		/**
+		 * Create a connection, optionally pumping in data immediately
+		 * @param  {String} name    Connection name
+		 * @param  {Request} request Hapi request
+		 * @param  {Function} reply   Hapi reply function
+		 * @param  {Any} data    Optional data to pass along
+		 */
+		createConnection: function(name, request, reply, data) {
+			var channel = new stream.PassThrough();
+			var eventName = name;
+
+			Pub.addConnection(eventName, channel);
+
+			request.raw.req.on('close', function() {
+				Pub.removeConnection(eventName, channel);
+			});
+
+			reply(channel)
+				.code(200)
+				.type('text/event-stream')
+				.header('Connection', 'close')
+				.header('Transfer-Encoding', 'identity')
+				.header('Cache-Control', 'no-cache')
+				.header('retry', 10000);
+
+			if (data) {
+				Pub.send(name, data);
+			}
 		}
 	};
 
@@ -95,21 +124,8 @@ module.exports.register = function(server, options, next) {
 			tags: ['api', 'sse'],
 		},
 		handler: function(request, reply) {
-			var channel = new stream.PassThrough();
 			var eventName = request.params.eventName;
-
-			Pub.addConnection(eventName, channel);
-
-			request.raw.req.on('close', function() {
-				Pub.removeConnection(eventName, channel);
-			});
-
-			reply(channel)
-				.code(200)
-				.type('text/event-stream')
-				.header('Connection', 'keep-alive')
-				.header('Cache-Control', 'no-cache')
-				.header('retry', 10000);
+			Pub.createConnection(eventName, request, reply);
 		}
 	});
 

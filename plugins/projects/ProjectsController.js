@@ -1,52 +1,100 @@
 'use strict';
 
 var Boom = require('boom');
+var uuid = require('uuid');
 
 module.exports = function(server, db, pub) {
+	var ProjectTable = db.Project;
 	/**
 	 * @class  ProjectsController
 	 */
 	return {
 		/**
 		 * Handles the getProjectsRoute
-		 * @param  {Request} request Hapi Request
-		 * @param  {Function} reply   Hapi reply
+		 * @param {Request} request               Hapi Request
+		 * @param {Object}  request.params        Request params Object
+		 * @param {String}  [request.params.id]   Optional User id for whom to get projects
+		 * @param {String} request.auth.credentials.userId    If request.params.id is not provided, default to the authenticated user
+		 * @param {Function} reply   Hapi reply
 		 */
 		getProjects: function(request, reply) {
-			var userId = request.query.id;
+			var userId = request.params.id;
 			if (!userId) {
-				userId = request.auth.userId;
+				userId = request.auth.credentials.userId;
 			}
 
-			db.Project.getForUser(userId)
-				.complete(reply);
+			return ProjectTable
+				.getForUser(userId)
+				.then(function(rows) {
+					reply(rows);
+				})
+				.catch(reply);
+		},
+
+		/**
+		 * Handles the getProjectsRoute
+		 * @param {Request} request               Hapi Request
+		 * @param {Object}  request.params        Request params Object
+		 * @param {String}  [request.params.id]   Optional User id for whom to get projects
+		 * @param {String} request.auth.credentials.userId    If request.params.id is not provided, default to the authenticated user
+		 * @param {Function} reply   Hapi reply
+		 */
+		subscribeToProjects: function(request, reply) {
+			var userId = request.params.id;
+			if (!userId) {
+				userId = request.auth.credentials.userId;
+			}
+
+			ProjectTable
+				.getForUser(userId)
+				.then(function(projects) {
+						var name = 'workspace/' + userId;
+						pub.createConnection(name, request, reply);
+						projects.map(function(project) {
+							pub.send(name, project);
+						});
+				})
+				.catch(reply);
 		},
 
 		/**
 		 * Handles the create project route
-		 * @param  {Request} request Hapi request object
-		 * @param  {Function} reply   Hapi reply]
+		 * @param {Request} request             Hapi request object
+		 * @param {Object} request.auth         Authentication credentials
+		 * @param {String} request.auth.credentials.userId  Currently logged in user id
+		 * @param {Function} reply   Hapi reply
 		 */
 		createProject: function(request, reply) {
-			db.Project.create(request)
+			if (!request.payload.ownerId) request.payload.ownerId = request.auth.credentials.userId;
+
+			ProjectTable
+				.create(
+					request.payload.name,
+					request.payload.description,
+					request.payload.ownerId
+				)
 				.then(function(project) {
 					reply();
-					pub.send('workspace/' + request.auth.userId, project);
+					pub.send('workspace/' + request.auth.credentials.userId, project);
 				})
 				.catch(function(e) {
-					server.log(['error', 'db'], e.stack);
-					reply(Boom.badImplementation(e));
+					server.log(['error'], e.stack);
+					console.log(e.stack);
+					reply(e);
 				});
 		},
 
 		/**
 		 * Handles the share workspace route
-		 * @param  {Request} request Hapi request object
-		 * @param  {Function} reply   Hapi reply function
+		 * @param {Request} request Hapi request     object
+		 * @param {Object} request.payload HTTP       request body payload
+		 * @param {String} request.payload.userId     User ID to share the project with
+		 * @param {String} request.payload.projectId  Project ID to share
+		 * @param {Function} reply   Hapi reply function
 		 */
-		shareWorkspace: function(request, reply) {
+		shareProject: function(request, reply) {
 			db.Project
-				.shareWithUser(
+				.shareWithUserModel(
 					request.payload.userId,
 					request.payload.projectId
 				)
