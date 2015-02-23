@@ -112,6 +112,10 @@ module.exports.register = function(server, options, next) {
 	server.expose('pub', Pub);
 
 	/**
+	 * Generic SSE subscription endpoint.  Each named endpoint should have its own route described
+	 * in a dependent plugin; this is exposed as an all purpose (read: mostly for testing) broadcast
+	 * subscriber
+	 *
 	 * @route ['GET'] /subscribe/{eventName} Get a stream of Server Sent events for the namespace
 	 * @param  {String} eventName Namespace for the event stream
 	 */
